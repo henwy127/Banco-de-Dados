@@ -1,5 +1,7 @@
 package aula;
 
+import net.bytebuddy.dynamic.scaffold.MethodRegistry;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -61,6 +63,70 @@ public class ProdutoDAO {
             }
         }
 
+        return listaProdutos;
+    }
+
+    public Produto buscarPorId(int id) throws SQLException{
+        String sql = "SELECT id, descricao, preco FROM produto Where id = ?";
+
+        try(Connection conexao = Conexao.abrir();
+            PreparedStatement comando = conexao.prepareStatement(sql)){
+
+            comando.setInt(1, id);
+
+            ResultSet resultado = comando.executeQuery();
+
+            if(resultado.next()){
+                return new Produto(resultado.getInt("id"),
+                        resultado.getString("descricao"),
+                        resultado.getDouble("preco"));
+            }
+        }
+        return null;
+    }
+
+
+    public List<Produto> buscarPorPreco(double preco) throws SQLException {
+        String sql = "SELECT id, descricao, preco FROM produto WHERE preco <= ?";
+        List<Produto> listaProdutos = new ArrayList<>();
+
+        try (Connection conexao = Conexao.abrir();
+             PreparedStatement comando = conexao.prepareStatement(sql)) {
+
+            comando.setDouble(1, preco);
+
+            try (ResultSet resultado = comando.executeQuery()) {
+                while (resultado.next()) {
+                    listaProdutos.add(new Produto(
+                            resultado.getInt("id"),
+                            resultado.getString("descricao"),
+                            resultado.getDouble("preco")
+                    ));
+                }
+            }
+        }
+        return listaProdutos;
+    }
+
+    public List<Produto> buscarPorDescricao(String descricao) throws SQLException {
+        String sql = "SELECT id, descricao, preco FROM produto WHERE descricao LIKE ?";
+        List<Produto> listaProdutos = new ArrayList<>();
+
+        try (Connection conexao = Conexao.abrir();
+             PreparedStatement comando = conexao.prepareStatement(sql)) {
+
+            comando.setString(1, "%" + descricao + "%");
+
+            try (ResultSet resultado = comando.executeQuery()) {
+                while (resultado.next()) {
+                    listaProdutos.add(new Produto(
+                            resultado.getInt("id"),
+                            resultado.getString("descricao"),
+                            resultado.getDouble("preco")
+                    ));
+                }
+            }
+        }
         return listaProdutos;
     }
 }
